@@ -2,16 +2,15 @@ import pygame
 import math
 import random
 import socket
+import threading
+
+port_num = 12000
+server_ip = socket.gethostbyname(socket.gethostname())
+server_details = (server_ip,port_num)
 
 pygame.init()
 window = pygame.display.set_mode((640,600))
 pygame.display.set_caption("Break the maze!")
-
-# width = 40
-# height = 60
-# x = int(250 - (width / 2))
-# y = int(250 - (height / 2))
-# velocity = 5
 
 image_orig = pygame.Surface((12,30))
 image_orig.set_colorkey((0,0,0))  
@@ -48,15 +47,13 @@ obstacles = (
      pygame.Rect(540,500,50,100)
 )
 
-# sample_obs = pygame.Rect(400,400,100,100)
-
 def move_up(current_rect):
     global angle_track,obstacles
     old_center = current_rect.center
     ref_angle = 90 + angle_track
     ref_angle = (math.pi/180) * ref_angle
     
-    new_center = (old_center[0] + 5*math.cos(ref_angle),old_center[1] - 5*math.sin(ref_angle))  
+    new_center = (old_center[0] + 10*math.cos(ref_angle),old_center[1] - 10*math.sin(ref_angle))  
     current_rect.center = new_center
     if current_rect.collidelist(obstacles) > -1:
         return old_center
@@ -86,14 +83,37 @@ def turn(direction):
 # Puts the obstacles on the screen
 for obstacle in obstacles:
     pygame.draw.rect(window, pygame.Color('red'), obstacle)
+    
+def listener(conn,addr):
+    global rect,image
+    while True:
+        message = conn.recv(1024).decode('utf-8')
+        if message.strip():
+            action = int(message)
+            if action == 0: image,rect = turn('r')
+            elif action == 1: image,rect = turn('l')
+            rect.center = move_up(rect)
+            
 
-def server():
-    pass
+def set_server():
+    global server_details
+    print(f'[SERVER] listening at: {server_details}')
+    server = socket.socket(family=socket.AF_INET,type=socket.SOCK_STREAM)
+    server.bind(server_details)
+    server.listen()
+    while True:
+        conn, addr = server.accept()
+        thread = threading.Thread(target=listener,args=(conn,addr))
+        thread.daemon = True
+        thread.start()
+        
 
 running = True
+server_thread = threading.Thread(target=set_server)
+server_thread.daemon = True
+server_thread.start()
 
 while running:    
-    # clock.tick(30)
     window.fill((0,0,0))
     pygame.time.delay(50)
       
@@ -104,14 +124,7 @@ while running:
       
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  
-    # pygame.draw.rect(window,pygame.Color('red'),sample_obs)
-    
-    # action = random.randint(0,1)
-    
-    # if action == 0: image,rect = turn('r')
-    # elif action == 1: image,rect = turn('l')
-    # rect.center = move_up(rect)
         
     window.blit(image,rect)
-    
     pygame.display.flip()
+    # clock.tick(5)
