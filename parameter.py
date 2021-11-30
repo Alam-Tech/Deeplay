@@ -5,4 +5,9 @@ class Parameters:
         self.distance = distance
         self.angle = angle
         self.sensors = sensors
-        
+
+class ActionTrigger:
+    
+    def __init__(self,player_id,action):
+        self.player_id = player_id
+        self.action = action

@@ -1,3 +1,4 @@
+import pickle
 import pygame
 import math
 import socket
@@ -12,12 +13,19 @@ pygame.init()
 window = pygame.display.set_mode((640,600))
 pygame.display.set_caption("Break the maze!")
 
-image_orig = pygame.Surface((12,30))
-image_orig.set_colorkey((0,0,0))  
-image_orig.fill((255,0,0))
-image = image_orig.copy()
-rect = image.get_rect()
-rect.center = (15,350)
+player_original = [pygame.Surface((12,30)),pygame.Surface((12,30))]
+
+#Setting the color of the players:
+for i in range(2): player_original[i].set_colorkey((0,0,0))
+player_original[0].fill((255,0,0))
+player_original[1].fill((0,255,0))
+
+player_copy = [player.copy() for player in player_original]
+
+player_rect = [i.get_rect() for i in player_copy]
+player_rect[0].center = (15,350)
+player_rect[1].center = (35,350)
+
 angle_track = 0
 destination = (615,25)
 
@@ -78,8 +86,8 @@ def move_up(current_rect):
     
     return new_center,reward
 
-def turn(direction):
-    global angle_track,image_orig
+def turn(player_id,direction):
+    global angle_track,player_original
     if direction.lower() == 'r':
         if angle_track <= 0:
               angle_track = -1 * ((abs(angle_track) + 15) % 360)
@@ -91,8 +99,8 @@ def turn(direction):
         else:
               angle_track = angle_track + 15
     
-    temp_image = pygame.transform.rotate(image_orig,angle_track)
-    old_center = rect.center
+    temp_image = pygame.transform.rotate(player_original[player_id],angle_track)
+    old_center = player_rect[player_id].center
     temp_rect = temp_image.get_rect()
     temp_rect.center = old_center
     return (temp_image,temp_rect)
@@ -102,18 +110,22 @@ for obstacle in obstacles:
     pygame.draw.rect(window, pygame.Color('red'), obstacle)
     
 def listener(conn,addr):
-    global rect,image
+    global player_rect,player_copy
     # A function to get the current parameter object filled with all instances except the 'last_reward'
     # set the parametr object's last_reward instance as zero
     # Pickle the parameter object and send it via TCP connection.
-    
+    print(f'[SERVER] Connected to {addr}')
     while True:
-        message = conn.recv(1024).decode('utf-8')
-        if message.strip():
-            action = int(message)
-            if action == 0: image,rect = turn('r')
-            elif action == 1: image,rect = turn('l')
-            rect.center,reward = move_up(rect)
+        message = conn.recv(1024)
+        if message:
+            packet = pickle.loads(message)
+            target_player = packet.player_id
+            action = packet.action
+            # print(f'Recieved packet from id: {target_player}')
+            if action == 0: player_copy[target_player],player_rect[target_player] = turn(target_player,'r')
+            elif action == 1: player_copy[target_player],player_rect[target_player] = turn(target_player,'l')
+            #elif action == 2: player_rect[target_player].center,reward = move_up(player_rect[target_player])
+            player_rect[target_player].center,reward = move_up(player_rect[target_player])
             #Get the parameter object from the function
             #set the last_reward of the parameter object.
 
@@ -147,6 +159,8 @@ while running:
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  
         
-    window.blit(image,rect)
+    for i in range(2):
+        window.blit(player_copy[i],player_rect[i])
+            
     pygame.display.flip()
-    # clock.tick(5)
+    
