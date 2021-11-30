@@ -3,7 +3,9 @@ import pygame
 import math
 import socket
 import threading
-import parameter
+from utility.parameter import *
+from utility.objects import *
+from utility.players import *
 
 port_num = 12000
 server_ip = socket.gethostbyname(socket.gethostname())
@@ -13,48 +15,10 @@ pygame.init()
 window = pygame.display.set_mode((640,600))
 pygame.display.set_caption("Break the maze!")
 
-player_original = [pygame.Surface((12,30)),pygame.Surface((12,30))]
-
-#Setting the color of the players:
-for i in range(2): player_original[i].set_colorkey((0,0,0))
-player_original[0].fill((255,0,0))
-player_original[1].fill((0,255,0))
-
-player_copy = [player.copy() for player in player_original]
-
-player_rect = [i.get_rect() for i in player_copy]
-player_rect[0].center = (15,350)
-player_rect[1].center = (35,350)
-
 angle_track = 0
 destination = (615,25)
 
 clock = pygame.time.Clock()
-
-obstacles = (
-     pygame.Rect(0, 0, 50, 300),
-     pygame.Rect(0, 400, 50, 200),
-     pygame.Rect(100, 0, 50, 200),
-     pygame.Rect(100, 250, 50, 200),
-     pygame.Rect(100, 500, 50, 100),
-     pygame.Rect(150, 100, 50, 30),
-     pygame.Rect(200, 100, 30, 230),
-     pygame.Rect(150, 300, 50, 30),
-     pygame.Rect(200,0,110,50),
-     pygame.Rect(280,50,30,100),
-     pygame.Rect(280,200,110,250),
-     pygame.Rect(200,380,30,170),
-     pygame.Rect(230,500,160,50), 
-     pygame.Rect(360,550,30,50),
-     pygame.Rect(360,50,30,100),
-     pygame.Rect(390,50,50,30),
-     pygame.Rect(440,50,50,300),
-     pygame.Rect(390,320,50,30),
-     pygame.Rect(440,400,50,200),
-     pygame.Rect(540,0,50,200),
-     pygame.Rect(540,250,50,200),
-     pygame.Rect(540,500,50,100)
-)
 
 def euclidean_distance(pt1,pt2):
     term_1 = (pt1[0] - pt2[0]) ** 2
@@ -75,6 +39,7 @@ def move_up(current_rect):
     #Hit an obstacle:
     if current_rect.collidelist(obstacles) > -1:
         return old_center,reward
+    
     #Hit the boundary:
     if (new_center[0] < 0 or new_center[0] > 600) or (new_center[1] < 0 or new_center[1] > 600):
         return old_center,reward
@@ -111,9 +76,11 @@ for obstacle in obstacles:
     
 def listener(conn,addr):
     global player_rect,player_copy
+    
     # A function to get the current parameter object filled with all instances except the 'last_reward'
     # set the parametr object's last_reward instance as zero
     # Pickle the parameter object and send it via TCP connection.
+    
     print(f'[SERVER] Connected to {addr}')
     while True:
         message = conn.recv(1024)
@@ -121,13 +88,14 @@ def listener(conn,addr):
             packet = pickle.loads(message)
             target_player = packet.player_id
             action = packet.action
-            # print(f'Recieved packet from id: {target_player}')
             if action == 0: player_copy[target_player],player_rect[target_player] = turn(target_player,'r')
             elif action == 1: player_copy[target_player],player_rect[target_player] = turn(target_player,'l')
-            #elif action == 2: player_rect[target_player].center,reward = move_up(player_rect[target_player])
+    
             player_rect[target_player].center,reward = move_up(player_rect[target_player])
+    
             #Get the parameter object from the function
             #set the last_reward of the parameter object.
+            #Send the paramter object via TCP connection.
 
 def set_server():
     global server_details
@@ -159,7 +127,7 @@ while running:
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  
         
-    for i in range(2):
+    for i in range(total_num_of_players):
         window.blit(player_copy[i],player_rect[i])
             
     pygame.display.flip()

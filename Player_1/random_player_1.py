@@ -2,7 +2,11 @@ import socket
 import random
 import time
 import pickle
-import parameter
+
+import sys 
+sys.path.append('..')
+
+from utility.parameter import *
 
 player_id = 0
 port_number = 12000
@@ -15,7 +19,7 @@ print(f'Player is connected.')
 
 while True:
     action = random.randint(0, 1)
-    packet = parameter.ActionTrigger(player_id,action)
+    packet = ActionTrigger(player_id,action)
     pickled_packet = pickle.dumps(packet)
     player.send(pickled_packet) 
     time.sleep(0.1)
