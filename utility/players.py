@@ -16,3 +16,5 @@ player_rect = [i.get_rect() for i in player_copy]
 #Setting the centres:
 player_rect[0].center = (15,350)
 player_rect[1].center = (35,350)
+
+prev_state_track = [player.center for player in player_rect]

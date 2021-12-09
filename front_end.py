@@ -88,6 +88,9 @@ def listener(conn,addr):
             packet = pickle.loads(message)
             target_player = packet.player_id
             action = packet.action
+            
+            prev_state_track[target_player] = player_rect[target_player].center
+            
             if action == 0: player_copy[target_player],player_rect[target_player] = turn(target_player,'r')
             elif action == 1: player_copy[target_player],player_rect[target_player] = turn(target_player,'l')
     

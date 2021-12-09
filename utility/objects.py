@@ -1,4 +1,5 @@
 import pygame
+import numpy as np
 
 obstacles = (
      pygame.Rect(0, 0, 50, 300),
@@ -24,3 +25,19 @@ obstacles = (
      pygame.Rect(540,250,50,200),
      pygame.Rect(540,500,50,100)
 )
+
+grid = np.zeros((660,700))
+
+#Making the borders opaque:
+grid[:30,:] = 1
+grid[630:,:] = 1
+grid[30:630,:30] = 1
+grid[30:630,670:] = 1
+
+#Making the obstacles opaque:
+for obs in obstacles:
+     row = obs.top + 30 #Adding the top border offset
+     col = obs.left + 30 #Adding the sideways border offset
+     height = obs.height
+     width = obs.width
+     grid[row:row+height,col:col+width] = 1
