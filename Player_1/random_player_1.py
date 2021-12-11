@@ -2,6 +2,7 @@ import socket
 import random
 import time
 import pickle
+import threading
 
 import sys 
 sys.path.append('..')
@@ -13,9 +14,24 @@ port_number = 12000
 host_ip = socket.gethostbyname(socket.gethostname())
 host_details = (host_ip,port_number)
 
+def listener():
+    while True:
+        pickled_params = player.recv(1024)
+        if pickled_params:
+            params = pickle.loads(pickled_params)
+            print('Parameter object received and depickled!')
+            print(f'Distance= {params.distance}')
+            print(f'Angle: {params.angle}')
+            print(f'Sensors = {params.sensors}')
+            print(f'Prev_reward = {params.last_reward}')
+
+
 player = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 player.connect(host_details)
 print(f'Player is connected.')
+
+thread = threading.Thread(target=listener)
+thread.start()
 
 while True:
     action = random.randint(0, 1)

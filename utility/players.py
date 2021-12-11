@@ -17,4 +17,4 @@ player_rect = [i.get_rect() for i in player_copy]
 player_rect[0].center = (15,350)
 player_rect[1].center = (35,350)
 
-prev_state_track = [player.center for player in player_rect]
+angle_track = [0] * total_num_of_players

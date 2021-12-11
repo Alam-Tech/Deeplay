@@ -1,6 +1,7 @@
 import math
 import numpy as np
-from objects import *
+from .parameter import *
+from .objects import *
 
 #Function to calculate euclidean distance between two points:
 def euclidean_distance(pt1,pt2):
@@ -9,15 +10,23 @@ def euclidean_distance(pt1,pt2):
     distance = math.sqrt(term_1 + term_2)
     return distance
 
-#Function to calculate the angle between the velocity vector and the destination from step t-1:
-def angle(current_state,prev_state,destination):
-    vector_1 = (current_state[0]-prev_state[0],current_state[1]-prev_state[1])
-    vector_2 = (destination[0]-prev_state[0],destination[1]-prev_state[1])
+#Function to calculate the angle between the agent's direction vector and the destination vector from the center:
+def angle(player_rect,destination):
+    # vector_1 = (current_state[0]-prev_state[0],current_state[1]-prev_state[1])
+    # vector_2 = (destination[0]-prev_state[0],destination[1]-prev_state[1])
+    top_left = player_rect.topleft
+    top_right = player_rect.topright
+    center = player_rect.center
+    midpt = tuple( (i+j)/2.0 for i,j in zip(top_left,top_right) )
+
+    vector_1 = (midpt[0]-center[0],midpt[1]-center[1])
+    vector_2 = (destination[0]-center[0],destination[1]-center[1])
     unit_vector_1 = vector_1 / np.linalg.norm(vector_1)
     unit_vector_2 = vector_2 / np.linalg.norm(vector_2)
+
     dot_product = np.dot(unit_vector_1, unit_vector_2)
     angle = np.arccos(dot_product)
-    return angle
+    return math.degrees(angle)
 
 #Function to calculate the sensor output for the area of a rectange whose:
 # Top-left point = (row_num,col_num)
@@ -67,10 +76,25 @@ def get_sensors(player_rect,angle_track):
             result.append(get_sensor_output(center[0],center[1]-20,20,20))
             result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
             result.append(get_sensor_output(center[0],center[1],20,20))
+        elif angle_track > 90 and angle_track < 180:
+            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
+            result.append(get_sensor_output(center[0]-20,center[1],20,20))
+            result.append(get_sensor_output(center[0],center[1]-20,20,20))
         elif angle_track > 180 and angle_track < 270:
-            result.append(get_sensor_output(top_left[0]-4,top_left[1]-20,20,20))
-            result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
-            result.append(get_sensor_output(top_right[0]+20,top_right[1],20,20))
-            
+            result.append(get_sensor_output(center[0]-20,center[1],20,20))
+            result.append(get_sensor_output(center[0],center[1],20,20))
+            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
+        else:
+            result.append(get_sensor_output(center[0],center[1],20,20))
+            result.append(get_sensor_output(center[0],center[1]-20,20,20))
+            result.append(get_sensor_output(center[0]-20,center[1],20,20))
+
+    result = [float(i)/400.0 for i in result]
+    return result        
     
-    
+def get_parameters(player_rect,angle_track,destination):
+    distance = euclidean_distance(player_rect.center,destination)
+    rel_angle = angle(player_rect,destination)
+    sensor_output = get_sensors(player_rect,angle_track)
+    param_obj = Parameters(distance,rel_angle,sensor_output)
+    return param_obj
