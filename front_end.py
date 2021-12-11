@@ -32,7 +32,7 @@ def move_up(target_player):
     temp_rect = player_rect[target_player]
     old_center = temp_rect.center
     #Modifying the angle for convenience:
-    ref_angle = 90 + angle_track
+    ref_angle = 90 + angle_track[target_player]
     ref_angle = (math.pi/180) * ref_angle
     #Updating the center:
     new_center = (old_center[0] + 10*math.cos(ref_angle),old_center[1] - 10*math.sin(ref_angle))  
@@ -41,10 +41,12 @@ def move_up(target_player):
     
     #Hit an obstacle:
     if temp_rect.collidelist(obstacles) > -1:
+        temp_rect.center = old_center
         return reward
     
     #Hit the boundary:
     if (new_center[0] < 0 or new_center[0] > 600) or (new_center[1] < 0 or new_center[1] > 600):
+        temp_rect.center = old_center
         return reward
     
     old_dist = euclidean_distance(old_center,destination)
@@ -75,6 +77,9 @@ def turn(target_player,direction):
     old_center = player_rect[target_player].center
     temp_rect = temp_image.get_rect()
     temp_rect.center = old_center
+    #Hitting obstacles:
+    if temp_rect.collidelist(obstacles) > -1:
+        return -1
     #Updating the rect object of the players:
     player_rect[target_player] = temp_rect
     player_copy[target_player] = temp_image
