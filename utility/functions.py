@@ -23,7 +23,9 @@ def angle(current_state,prev_state,destination):
 # Top-left point = (row_num,col_num)
 # width = dim_x
 # Height = dim_y
-def get_sensor_output(row_num,col_num,dim_x,dim_y):
+def get_sensor_output(left,top,dim_x,dim_y):
+    row_num = top + 30
+    col_num = left + 30
     sensor_area = grid[row_num:row_num+dim_y,col_num:col_num+dim_x].copy()
     sensor_area = sensor_area.ravel()
     sensor_output = np.sum(sensor_area)
@@ -31,17 +33,44 @@ def get_sensor_output(row_num,col_num,dim_x,dim_y):
 
 def get_sensors(player_rect,angle_track):
     #Conversion of angle_track:
+    top_left = player_rect.topleft
+    top_right = player_rect.topright
+    center = player_rect.center
+
     if angle_track < 0:
         angle_track += 360
     angle_track = (angle_track + 90) % 360
     
     result = []
     
-    if angle_track % 90 == 0:
-        #Calculate the value of the sensors using method 1
-        pass
+    if angle_track == 0:
+        #Front
+        result.append(get_sensor_output(top_left[0],top_left[1]-4,20,20))
+        #Left
+        result.append(get_sensor_output(top_left[0]-20,top_left[1]-20,20,20))
+        #Right
+        result.append(get_sensor_output(top_right[0]-20,top_right[1],20,20))
+    elif angle_track == 90:
+        result.append(get_sensor_output(top_left[0]-4,top_left[1]-20,20,20))
+        result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
+        result.append(get_sensor_output(top_right[0]+20,top_right[1],20,20))
+    elif angle_track == 180:
+        result.append(get_sensor_output(top_right[0]-20,top_right[1]-4,20,20))
+        result.append(get_sensor_output(top_left[0],top_left[1],20,20))
+        result.append(get_sensor_output(top_right[0],top_right[1]-20,20,20))
+    elif angle_track == 270:
+        result.append(get_sensor_output(top_right[0]-4,top_right[1],20,20))
+        result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
+        result.append(get_sensor_output(top_right[0]-20,top_right[1]-20,20,20))
     else:
-        #Calculate the sensors using method 2
-        pass
+        if angle_track > 0 and angle_track < 90:
+            result.append(get_sensor_output(center[0],center[1]-20,20,20))
+            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
+            result.append(get_sensor_output(center[0],center[1],20,20))
+        elif angle_track > 180 and angle_track < 270:
+            result.append(get_sensor_output(top_left[0]-4,top_left[1]-20,20,20))
+            result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
+            result.append(get_sensor_output(top_right[0]+20,top_right[1],20,20))
+            
     
     
