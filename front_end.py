@@ -16,11 +16,6 @@ pygame.init()
 window = pygame.display.set_mode((640,600))
 pygame.display.set_caption("Break the maze!")
 
-#angle_track = 0
-destination = (615,25)
-
-clock = pygame.time.Clock()
-
 def euclidean_distance(pt1,pt2):
     term_1 = (pt1[0] - pt2[0]) ** 2
     term_2 = (pt1[1] - pt2[1]) ** 2
@@ -77,60 +72,57 @@ def turn(target_player,direction):
     old_center = player_rect[target_player].center
     temp_rect = temp_image.get_rect()
     temp_rect.center = old_center
-    #Hitting obstacles:
-    if temp_rect.collidelist(obstacles) > -1:
-        return -1
     #Updating the rect object of the players:
     player_rect[target_player] = temp_rect
     player_copy[target_player] = temp_image
     #Calculating the reward:
-    reward = -angle(player_rect[target_player],destination)
+    reward = 1/angle(target_player)
     return reward
         
 # Puts the obstacles on the screen
 for obstacle in obstacles:
     pygame.draw.rect(window, pygame.Color('red'), obstacle)
     
-def listener(conn,addr):
-    #global player_rect,player_copy
-    reward = 0
-    #Since the id of the player is unknown, the player has to first send a dummy ActionTrigger packet with
-    #an invalid action, so that the server recognises it and sends the param object to that specific player
+# def listener(conn,addr):
+#     #global player_rect,player_copy
+#     reward = 0
+#     #Since the id of the player is unknown, the player has to first send a dummy ActionTrigger packet with
+#     #an invalid action, so that the server recognises it and sends the param object to that specific player
     
-    print(f'[SERVER] Connected to {addr}')
-    while True:
-        message = conn.recv(1024)
-        if message:
-            packet = pickle.loads(message)
-            target_player = packet.player_id
-            action = packet.action
+#     print(f'[SERVER] Connected to {addr}')
+#     while True:
+#         message = conn.recv(1024)
+#         if message:
+#             packet = pickle.loads(message)
+#             target_player = packet.player_id
+#             action = packet.action
         
-            if action == 0: reward = turn(target_player,'r')
-            elif action == 1: reward = turn(target_player,'l')
-            elif action == 2: reward = move_up(target_player)
+#             if action == 0: reward = turn(target_player,'r')
+#             elif action == 1: reward = turn(target_player,'l')
+#             elif action == 2: reward = move_up(target_player)
 
-            param_obj = get_parameters(player_rect[target_player],angle_track[target_player],destination)
-            param_obj.last_reward = reward
-            pickled_param_obj = pickle.dumps(param_obj)
-            conn.send(pickled_param_obj)
+#             param_obj = get_parameters(player_rect[target_player],angle_track[target_player],destination)
+#             param_obj.last_reward = reward
+#             pickled_param_obj = pickle.dumps(param_obj)
+#             conn.send(pickled_param_obj)
 
-def set_server():
-    global server_details
-    print(f'[SERVER] listening at: {server_details}')
-    server = socket.socket(family=socket.AF_INET,type=socket.SOCK_STREAM)
-    server.bind(server_details)
-    server.listen()
-    while True:
-        conn, addr = server.accept()
-        thread = threading.Thread(target=listener,args=(conn,addr))
-        thread.daemon = True
-        thread.start()
+# def set_server():
+#     global server_details
+#     print(f'[SERVER] listening at: {server_details}')
+#     server = socket.socket(family=socket.AF_INET,type=socket.SOCK_STREAM)
+#     server.bind(server_details)
+#     server.listen()
+#     while True:
+#         conn, addr = server.accept()
+#         thread = threading.Thread(target=listener,args=(conn,addr))
+#         thread.daemon = True
+#         thread.start()
         
 
 running = True
-server_thread = threading.Thread(target=set_server)
-server_thread.daemon = True
-server_thread.start()
+# server_thread = threading.Thread(target=set_server)
+# server_thread.daemon = True
+# server_thread.start()
 
 while running:    
     window.fill((0,0,0))
@@ -140,7 +132,34 @@ while running:
         if event.type == pygame.QUIT:
             print('Quitting game...')
             running = False
-      
+    
+    #Manual movements:
+    key_pressed = pygame.key.get_pressed()
+    if key_pressed[pygame.K_UP]:
+        move_up(0)
+        param_obj = get_parameters(0)
+        print('Parameter object:')
+        print(f'Distance= {param_obj.distance}')
+        print(f'Angle: {param_obj.angle}')
+        print(f'Sensors = {param_obj.sensors}')
+        print(f'Prev_reward = {param_obj.last_reward}')
+    elif key_pressed[pygame.K_RIGHT]:
+        turn(0,'r')
+        param_obj = get_parameters(0)
+        print('Parameter object:')
+        print(f'Distance= {param_obj.distance}')
+        print(f'Angle: {param_obj.angle}')
+        print(f'Sensors = {param_obj.sensors}')
+        print(f'Prev_reward = {param_obj.last_reward}')
+    elif key_pressed[pygame.K_LEFT]:
+        turn(0,'l')
+        param_obj = get_parameters(0)
+        print('Parameter object:')
+        print(f'Distance= {param_obj.distance}')
+        print(f'Angle: {param_obj.angle}')
+        print(f'Sensors = {param_obj.sensors}')
+        print(f'Prev_reward = {param_obj.last_reward}')
+        
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  
         
@@ -148,4 +167,3 @@ while running:
         window.blit(player_copy[i],player_rect[i])
             
     pygame.display.flip()
-    

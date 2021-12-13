@@ -2,7 +2,20 @@
 # #import sys
 # from PIL import Image
 # import matplotlib.pyplot as plt
+import math
+import numpy as np
 
+#vec_1 = (0,1)
+vec_1 = (615,575)
+vec_2 = (1,0)
+
+unit_vec_1 = vec_1 / np.linalg.norm(vec_1)
+cos_angle = np.dot(unit_vec_1,vec_2)
+print(f'cos_angle is {cos_angle}')
+angle = np.arccos(cos_angle)
+print(f'Angle in radians is {angle}')
+angle = math.degrees(angle)
+print(f'Degree in angles: {angle}')
 #np.set_printoptions(threshold=sys.maxsize)
 # im = Image.fromarray(grid * 255)
 # im.show()
