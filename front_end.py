@@ -13,7 +13,7 @@ server_ip = socket.gethostbyname(socket.gethostname())
 server_details = (server_ip,port_num)
 
 pygame.init()
-window = pygame.display.set_mode((640,600))
+window = pygame.display.set_mode((arena_width,arena_height))
 pygame.display.set_caption("Break the maze!")
 
 def euclidean_distance(pt1,pt2):
@@ -30,7 +30,7 @@ def move_up(target_player):
     ref_angle = 90 + angle_track[target_player]
     ref_angle = (math.pi/180) * ref_angle
     #Updating the center:
-    new_center = (old_center[0] + 10*math.cos(ref_angle),old_center[1] - 10*math.sin(ref_angle))  
+    new_center = (int(old_center[0] + 10*math.cos(ref_angle)),int(old_center[1] - 10*math.sin(ref_angle)))  
     temp_rect.center = new_center
     reward = -1
     
@@ -40,7 +40,7 @@ def move_up(target_player):
         return reward
     
     #Hit the boundary:
-    if (new_center[0] < 0 or new_center[0] > 600) or (new_center[1] < 0 or new_center[1] > 600):
+    if (new_center[0] < 0 or new_center[0] > arena_width) or (new_center[1] < 0 or new_center[1] > arena_height):
         temp_rect.center = old_center
         return reward
     
@@ -138,27 +138,27 @@ while running:
     if key_pressed[pygame.K_UP]:
         move_up(0)
         param_obj = get_parameters(0)
-        print('Parameter object:')
-        print(f'Distance= {param_obj.distance}')
-        print(f'Angle: {param_obj.angle}')
-        print(f'Sensors = {param_obj.sensors}')
-        print(f'Prev_reward = {param_obj.last_reward}')
+        # print('Parameter object:')
+        # print(f'Distance= {param_obj.distance}')
+        # print(f'Angle: {param_obj.angle}')
+        # print(f'Sensors = {param_obj.sensors}')
+        # print(f'Prev_reward = {param_obj.last_reward}')
     elif key_pressed[pygame.K_RIGHT]:
         turn(0,'r')
         param_obj = get_parameters(0)
-        print('Parameter object:')
-        print(f'Distance= {param_obj.distance}')
-        print(f'Angle: {param_obj.angle}')
-        print(f'Sensors = {param_obj.sensors}')
-        print(f'Prev_reward = {param_obj.last_reward}')
+        # print('Parameter object:')
+        # print(f'Distance= {param_obj.distance}')
+        # print(f'Angle: {param_obj.angle}')
+        # print(f'Sensors = {param_obj.sensors}')
+        # print(f'Prev_reward = {param_obj.last_reward}')
     elif key_pressed[pygame.K_LEFT]:
         turn(0,'l')
         param_obj = get_parameters(0)
-        print('Parameter object:')
-        print(f'Distance= {param_obj.distance}')
-        print(f'Angle: {param_obj.angle}')
-        print(f'Sensors = {param_obj.sensors}')
-        print(f'Prev_reward = {param_obj.last_reward}')
+        # print('Parameter object:')
+        # print(f'Distance= {param_obj.distance}')
+        # print(f'Angle: {param_obj.angle}')
+        # print(f'Sensors = {param_obj.sensors}')
+        # print(f'Prev_reward = {param_obj.last_reward}')
         
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  

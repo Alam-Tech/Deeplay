@@ -26,13 +26,17 @@ obstacles = (
      pygame.Rect(540,500,50,100)
 )
 
-grid = np.zeros((660,700))
+#Dimensions of the stadium:
+arena_width = 670
+arena_height = 600
+
+grid = np.zeros((arena_height+60,arena_width+60))
 
 #Making the borders opaque:
 grid[:30,:] = 1
-grid[630:,:] = 1
-grid[30:630,:30] = 1
-grid[30:630,670:] = 1
+grid[arena_height+30:,:] = 1
+grid[30:arena_height+30,:30] = 1
+grid[30:arena_height+30,arena_width+30:] = 1
 
 #Making the obstacles opaque:
 for obs in obstacles:

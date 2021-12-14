@@ -20,4 +20,3 @@ player_rect[1].center = (35,350)
 angle_track = [0] * total_num_of_players
 
 destination = (615,25)
-destination_angle = 43.07481629167684

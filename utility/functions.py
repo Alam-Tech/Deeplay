@@ -11,13 +11,23 @@ def euclidean_distance(pt1,pt2):
     distance = math.sqrt(term_1 + term_2)
     return distance
 
+def angle_between_vectors(vec_1,vec_2):
+    unit_vec_1 = vec_1 / np.linalg.norm(vec_1)
+    unit_vec_2 = vec_2 / np.linalg.norm(vec_2)
+    cos_angle = np.dot(unit_vec_1,unit_vec_2)
+    angle_radians = np.arccos(cos_angle)
+    return math.degrees(angle_radians)
+
 #Function to calculate the angle between the agent's direction vector and the destination vector from the center:
 def angle(target_player):
+    center = player_rect[target_player]
+    #Getting the angle of the agent wrt the horizontal
     player_angle = transform_angle_track(angle_track[target_player])
-    rel_angle = player_angle - destination_angle
-    if rel_angle <= 0 :
-        return abs(rel_angle)
-    else: return min(rel_angle,360-rel_angle)
+    destination_vec = (destination[0]-center[0],center[1]-destination[1])
+    #Getting the angle of the destination vector wrt horizontal:
+    destination_angle = angle_between_vectors(destination_vec,(1,0))
+    rel_angle = abs(destination_angle - player_angle)
+    return min(rel_angle, 360-rel_angle)
     
 #Function to calculate the sensor output for the area of a rectange whose:
 # Top-left point = (row_num,col_num)
@@ -38,53 +48,49 @@ def transform_angle_track(initial_angle):
     return final_angle 
 
 def get_sensors(target_player):
-    #Need to fix the function and get rid of the problem of the dynamic change
-    #of topleft and topright points
-    #Conversion of angle_track:
-    top_left = player_rect[target_player].topleft
-    top_right = player_rect[target_player].topright
     center = player_rect[target_player].center
+    #Conversion of angle_track:
     rel_angle = transform_angle_track(angle_track[target_player])
     result = []
     
     if rel_angle == 0:
         #Front
-        result.append(get_sensor_output(top_left[0],top_left[1]-4,20,20))
+        result.append(get_sensor_output(center[0]+15,center[1]-15,30,30))
         #Left
-        result.append(get_sensor_output(top_left[0]-20,top_left[1]-20,20,20))
+        result.append(get_sensor_output(center[0]-36,center[1]-15,30,30))
         #Right
-        result.append(get_sensor_output(top_right[0]-20,top_right[1],20,20))
+        result.append(get_sensor_output(center[0]-15,center[1]+6,30,30))
     elif rel_angle == 90:
-        result.append(get_sensor_output(top_left[0]-4,top_left[1]-20,20,20))
-        result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
-        result.append(get_sensor_output(top_right[0]+20,top_right[1],20,20))
+        result.append(get_sensor_output(center[0]-15,center[1]-45,30,30))
+        result.append(get_sensor_output(center[0]-36,center[1]-15,30,30))
+        result.append(get_sensor_output(center[0]+6,center[1]-15,30,30))
     elif rel_angle == 180:
-        result.append(get_sensor_output(top_right[0]-20,top_right[1]-4,20,20))
-        result.append(get_sensor_output(top_left[0],top_left[1],20,20))
-        result.append(get_sensor_output(top_right[0],top_right[1]-20,20,20))
+        result.append(get_sensor_output(center[0]-45,center[1]-15,30,30))
+        result.append(get_sensor_output(center[0]-15,center[1]+6,30,30))
+        result.append(get_sensor_output(center[0]-15,center[1]-36,30,30))
     elif rel_angle == 270:
-        result.append(get_sensor_output(top_right[0]-4,top_right[1],20,20))
-        result.append(get_sensor_output(top_left[0]-20,top_left[1],20,20))
-        result.append(get_sensor_output(top_right[0]-20,top_right[1]-20,20,20))
+        result.append(get_sensor_output(center[0]-15,center[1]+15,30,30))
+        result.append(get_sensor_output(center[0]+6,center[1]-15,30,30))
+        result.append(get_sensor_output(center[0]-36,center[1]-15,30,30))
     else:
         if rel_angle > 0 and rel_angle < 90:
-            result.append(get_sensor_output(center[0],center[1]-20,20,20))
-            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
-            result.append(get_sensor_output(center[0],center[1],20,20))
+            result.append(get_sensor_output(center[0],center[1]-30,20,20))
+            result.append(get_sensor_output(center[0]-30,center[1]-30,30,30))
+            result.append(get_sensor_output(center[0],center[1],30,30))
         elif rel_angle > 90 and rel_angle < 180:
-            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
-            result.append(get_sensor_output(center[0]-20,center[1],20,20))
-            result.append(get_sensor_output(center[0],center[1]-20,20,20))
+            result.append(get_sensor_output(center[0]-30,center[1]-30,30,30))
+            result.append(get_sensor_output(center[0]-30,center[1],30,30))
+            result.append(get_sensor_output(center[0],center[1]-30,30,30))
         elif rel_angle > 180 and rel_angle < 270:
-            result.append(get_sensor_output(center[0]-20,center[1],20,20))
-            result.append(get_sensor_output(center[0],center[1],20,20))
-            result.append(get_sensor_output(center[0]-20,center[1]-20,20,20))
+            result.append(get_sensor_output(center[0]-30,center[1],30,30))
+            result.append(get_sensor_output(center[0],center[1],30,30))
+            result.append(get_sensor_output(center[0]-30,center[1]-30,30,30))
         else:
-            result.append(get_sensor_output(center[0],center[1],20,20))
-            result.append(get_sensor_output(center[0],center[1]-20,20,20))
-            result.append(get_sensor_output(center[0]-20,center[1],20,20))
+            result.append(get_sensor_output(center[0],center[1],30,30))
+            result.append(get_sensor_output(center[0],center[1]-30,30,30))
+            result.append(get_sensor_output(center[0]-30,center[1],30,30))
 
-    result = [float(i)/400.0 for i in result]
+    result = [float(i)/900.0 for i in result]
     return result        
     
 def get_parameters(target_player):
