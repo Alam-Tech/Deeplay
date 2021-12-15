@@ -14,11 +14,13 @@ class Network(nn.Module):
         self.nb_inputs = nb_inputs
         self.nb_outputs = nb_actions
         self.first_connection = nn.Linear(self.nb_inputs,30)
-        self.second_connection = nn.Linear(30,self.nb_outputs)
+        self.second_connection = nn.Linear(30,40)
+        self.third_connection = nn.Linear(40,self.nb_outputs)
         
     def forward(self,state):
         fc1_activated = functional.relu(self.first_connection(state))
-        q_values = self.second_connection(fc1_activated)
+        fc2_activated = functional.relu(self.second_connection(fc1_activated))
+        q_values = self.third_connection(fc2_activated)
         return q_values
     
 class Memory(object):

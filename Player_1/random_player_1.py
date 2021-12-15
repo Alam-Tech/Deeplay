@@ -19,12 +19,6 @@ def listener():
         pickled_params = player.recv(1024)
         if pickled_params:
             params = pickle.loads(pickled_params)
-            print('Parameter object received and depickled!')
-            print(f'Distance= {params.distance}')
-            print(f'Angle: {params.angle}')
-            print(f'Sensors = {params.sensors}')
-            print(f'Prev_reward = {params.last_reward}')
-
 
 player = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 player.connect(host_details)
@@ -34,8 +28,8 @@ thread = threading.Thread(target=listener)
 thread.start()
 
 while True:
-    action = random.randint(0, 1)
+    action = random.randint(0, 2)
     packet = ActionTrigger(player_id,action)
     pickled_packet = pickle.dumps(packet)
     player.send(pickled_packet) 
-    time.sleep(0.1)
+    time.sleep(0.01)

@@ -6,8 +6,12 @@ import math
 import numpy as np
 
 #vec_1 = (0,1)
-vec_1 = (615,575)
-vec_2 = (1,0)
+vec_1 = (615,575,345)
+scalar_1 = 34
+scalar_2 = 35
+
+param_tuple = (scalar_1,scalar_2,*vec_1)
+print(f'param_tuple: {param_tuple}')
 
 # unit_vec_1 = vec_1 / np.linalg.norm(vec_1)
 # cos_angle = np.dot(unit_vec_1,vec_2)
@@ -33,13 +37,14 @@ vec_2 = (1,0)
 # test_2 = [3,4,5,6]
 # test_1 += test_2
 
-def angle_between_vectors(vec_1,vec_2):
-    unit_vec_1 = vec_1 / np.linalg.norm(vec_1)
-    unit_vec_2 = vec_2 / np.linalg.norm(vec_2)
-    cos_angle = np.dot(unit_vec_1,unit_vec_2)
-    angle_radians = np.arccos(cos_angle)
-    return math.degrees(angle_radians)
+# def angle_between_vectors(vec_1,vec_2):
+#     unit_vec_1 = vec_1 / np.linalg.norm(vec_1)
+#     unit_vec_2 = vec_2 / np.linalg.norm(vec_2)
+#     cos_angle = np.dot(unit_vec_1,unit_vec_2)
+#     angle_radians = np.arccos(cos_angle)
+#     return math.degrees(angle_radians)
 
-vec_1 = (1,1)
-vec_2 = (0,-1)
-print(f'Angle between vector 1 and vector 2 is {angle_between_vectors(vec_1,vec_2)}')
+# vec_1 = (1,1)
+# vec_2 = (0,-1)
+
+# print(f'Angle between vector 1 and vector 2 is {angle_between_vectors(vec_1,vec_2)}')
