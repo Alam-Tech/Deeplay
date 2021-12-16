@@ -18,7 +18,7 @@ player.connect(host_details)
 print(f'Player is connected.')
 
 while True:
-    action = random.randint(0, 1)
+    action = random.randint(0, 2)
     packet = ActionTrigger(player_id,action)
     pickled_packet = pickle.dumps(packet)
     player.send(pickled_packet) 

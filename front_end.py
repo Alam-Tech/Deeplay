@@ -16,7 +16,7 @@ pygame.init()
 window = pygame.display.set_mode((arena_width,arena_height))
 pygame.display.set_caption("Break the maze!")
 running = True
-smart_mode = False
+smart_mode = True
 
 def euclidean_distance(pt1,pt2):
     term_1 = (pt1[0] - pt2[0]) ** 2
@@ -49,8 +49,9 @@ def move_up(target_player):
     old_dist = euclidean_distance(old_center,destination)
     new_dist = euclidean_distance(new_center,destination)
     
-    if(new_dist < old_dist): reward = 0.1
-    else: reward = -0.2
+    if(new_dist < old_dist): reward = 0.4
+    else: reward = -0.6
+    #return (old_dist - new_dist) * 10
 
     #Updating the current player's rect:
     player_rect[target_player] = temp_rect
@@ -78,11 +79,16 @@ def turn(target_player,direction):
     player_rect[target_player] = temp_rect
     player_copy[target_player] = temp_image
     #Calculating the reward:
-    target_player_angle = angle(target_player) / 360.0
+    # angle_factor = angle(target_player) / 360.0
+    angle_factor = angle(target_player)
+    if angle_factor == 0:
+        angle_save = 1.0 / (angle_factor + 1)
+    else:
+        angle_save = 1.0 / angle_factor
     # if target_player_angle == 0:
     #     reward = 1 / (target_player_angle + 1)
     # else: reward = 1 / target_player_angle
-    return -target_player_angle
+    return -1.2 + angle_save
         
 # Puts the obstacles on the screen
 for obstacle in obstacles:
@@ -107,9 +113,11 @@ def listener(conn,addr):
             target_player = packet.player_id
             action = packet.action
         
+        
             if action == 0: reward = turn(target_player,'l')
             elif action == 1: reward = move_up(target_player)
             elif action == 2: reward = turn(target_player,'r')
+            # reward += move_up(target_player)
             
             if smart_mode:
                 param_obj = get_parameters(target_player)
