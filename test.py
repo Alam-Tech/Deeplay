@@ -4,7 +4,13 @@ def on_press(key):
     try:
         print('alphanumeric key {0} pressed'.format(key.char))
     except AttributeError:
-        print('special key {0} pressed'.format(key))
+        # print('special key {0} pressed'.format(key))
+        if key == key.up:
+            print('1')
+        elif key == key.right:
+            print('2')
+        elif key == key.left:
+            print('0')
 
 def on_release(key):
     print('{0} released'.format(key))

@@ -15,6 +15,8 @@ server_details = (server_ip,port_num)
 pygame.init()
 window = pygame.display.set_mode((arena_width,arena_height))
 pygame.display.set_caption("Break the maze!")
+running = True
+smart_mode = False
 
 def euclidean_distance(pt1,pt2):
     term_1 = (pt1[0] - pt2[0]) ** 2
@@ -89,12 +91,13 @@ for obstacle in obstacles:
 def listener(conn,addr):
     reward = 0
     
-    pickled_packet = conn.recv(1024)
-    packet = pickle.loads(pickled_packet)
-    print(f'Player {packet.player_id} connected...')
-    param_obj = get_parameters(packet.player_id)
-    pickled_param_obj = pickle.dumps(param_obj)
-    conn.send(pickled_param_obj)
+    if smart_mode:
+        pickled_packet = conn.recv(1024)
+        packet = pickle.loads(pickled_packet)
+        print(f'Player {packet.player_id} connected...')
+        param_obj = get_parameters(packet.player_id)
+        pickled_param_obj = pickle.dumps(param_obj)
+        conn.send(pickled_param_obj)
     
     print(f'[SERVER] Connected to {addr}')
     while True:
@@ -104,14 +107,15 @@ def listener(conn,addr):
             target_player = packet.player_id
             action = packet.action
         
-            if action == 0: reward = turn(target_player,'r')
-            elif action == 1: reward = turn(target_player,'l')
-            elif action == 2: reward = move_up(target_player)
-
-            param_obj = get_parameters(target_player)
-            param_obj.last_reward = reward
-            pickled_param_obj = pickle.dumps(param_obj)
-            conn.send(pickled_param_obj)
+            if action == 0: reward = turn(target_player,'l')
+            elif action == 1: reward = move_up(target_player)
+            elif action == 2: reward = turn(target_player,'r')
+            
+            if smart_mode:
+                param_obj = get_parameters(target_player)
+                param_obj.last_reward = reward
+                pickled_param_obj = pickle.dumps(param_obj)
+                conn.send(pickled_param_obj)
 
 def set_server():
     global server_details
@@ -125,8 +129,6 @@ def set_server():
         thread.daemon = True
         thread.start()
         
-
-running = True
 server_thread = threading.Thread(target=set_server)
 server_thread.daemon = True
 server_thread.start()
