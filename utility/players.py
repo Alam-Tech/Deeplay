@@ -17,6 +17,14 @@ player_rect = [i.get_rect() for i in player_copy]
 player_rect[0].center = (15,350)
 player_rect[1].center = (35,350)
 
+#Setting smart modes:
+player_smart_mode = [True] * total_num_of_players
+player_smart_mode[0] = False
+player_smart_mode[1] = True
+
 angle_track = [0] * total_num_of_players
 
 destination = (615,25)
+
+x_win = 615
+y_win = 45

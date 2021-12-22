@@ -16,7 +16,8 @@ pygame.init()
 window = pygame.display.set_mode((arena_width,arena_height))
 pygame.display.set_caption("Break the maze!")
 running = True
-smart_mode = True
+halt = False
+winner = -1
 
 def euclidean_distance(pt1,pt2):
     term_1 = (pt1[0] - pt2[0]) ** 2
@@ -25,7 +26,7 @@ def euclidean_distance(pt1,pt2):
     return distance
 
 def move_up(target_player):
-    #global angle_track,obstacles,destination
+    global halt
     temp_rect = player_rect[target_player]
     old_center = temp_rect.center
     #Modifying the angle for convenience:
@@ -49,16 +50,21 @@ def move_up(target_player):
     old_dist = euclidean_distance(old_center,destination)
     new_dist = euclidean_distance(new_center,destination)
     
+    # The agent has won the game!
+    if new_center[0] > x_win and new_center[1] < y_win:
+        halt = True
+        winner = target_player
+        print(f'Player {winner} has won the match!')
+        return 1.0
+        
     if(new_dist < old_dist): reward = 0.4
     else: reward = -0.6
-    #return (old_dist - new_dist) * 10
-
+    
     #Updating the current player's rect:
     player_rect[target_player] = temp_rect
     return reward
 
 def turn(target_player,direction):
-    #global angle_track,player_original
     if direction.lower() == 'r':
         if angle_track[target_player] <= 0:
               angle_track[target_player] = -1 * ((abs(angle_track[target_player]) + 15) % 360)
@@ -78,16 +84,13 @@ def turn(target_player,direction):
     #Updating the rect object of the players:
     player_rect[target_player] = temp_rect
     player_copy[target_player] = temp_image
-    #Calculating the reward:
-    # angle_factor = angle(target_player) / 360.0
+    
+    #Calculating the reward(angle saving factor in this case):
     angle_factor = angle(target_player)
     if angle_factor == 0:
         angle_save = 1.0 / (angle_factor + 1)
     else:
         angle_save = 1.0 / angle_factor
-    # if target_player_angle == 0:
-    #     reward = 1 / (target_player_angle + 1)
-    # else: reward = 1 / target_player_angle
     return -1.2 + angle_save
         
 # Puts the obstacles on the screen
@@ -97,13 +100,12 @@ for obstacle in obstacles:
 def listener(conn,addr):
     reward = 0
     
-    if smart_mode:
-        pickled_packet = conn.recv(1024)
-        packet = pickle.loads(pickled_packet)
-        print(f'Player {packet.player_id} connected...')
-        param_obj = get_parameters(packet.player_id)
-        pickled_param_obj = pickle.dumps(param_obj)
-        conn.send(pickled_param_obj)
+    pickled_packet = conn.recv(1024)
+    packet = pickle.loads(pickled_packet)
+    print(f'Player {packet.player_id} connected...')
+    param_obj = get_parameters(packet.player_id)
+    pickled_param_obj = pickle.dumps(param_obj)
+    conn.send(pickled_param_obj)
     
     print(f'[SERVER] Connected to {addr}')
     while True:
@@ -117,9 +119,12 @@ def listener(conn,addr):
             if action == 0: reward = turn(target_player,'l')
             elif action == 1: reward = move_up(target_player)
             elif action == 2: reward = turn(target_player,'r')
-            # reward += move_up(target_player)
             
-            if smart_mode:
+            # A player has won the game!
+            if halt:
+                break
+            
+            if player_smart_mode[target_player]:
                 param_obj = get_parameters(target_player)
                 param_obj.last_reward = reward
                 pickled_param_obj = pickle.dumps(param_obj)
@@ -152,7 +157,7 @@ while running:
         
     for obstacle in obstacles:
         pygame.draw.rect(window, pygame.Color('red'), obstacle)  
-        
+    
     for i in range(total_num_of_players):
         window.blit(player_copy[i],player_rect[i])
             
