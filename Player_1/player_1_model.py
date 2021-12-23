@@ -50,7 +50,8 @@ class Brain():
         self.last_action = 0
         
     def select_action(self,state):
-        probs = functional.softmax(self.model.forward(Variable(state,volatile=True))*100)
+        with torch.no_grad():
+            probs = functional.softmax(self.model.forward(Variable(state))*100,dim=0)
         action = probs.multinomial(1)
         return action.data[0,0]
     

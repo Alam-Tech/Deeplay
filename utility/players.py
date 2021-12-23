@@ -20,7 +20,7 @@ player_rect[1].center = (35,350)
 #Setting smart modes:
 player_smart_mode = [True] * total_num_of_players
 player_smart_mode[0] = False
-player_smart_mode[1] = True
+player_smart_mode[1] = False
 
 angle_track = [0] * total_num_of_players
 
